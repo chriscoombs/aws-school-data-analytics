@@ -1,0 +1,529 @@
+--criando a tabela alunos
+CREATE TABLE alunos (
+    id_aluno NUMBER(2) CONSTRAINT id_aluno_nn NOT NULL,
+    nome_aluno VARCHAR2(50)
+);
+CREATE UNIQUE INDEX id_aluno_pk
+ON alunos (id_aluno);
+
+ALTER TABLE alunos
+ADD ( CONSTRAINT id_aluno_pk
+       		 PRIMARY KEY (id_aluno)
+    ) ;
+--criando a tabela professores
+CREATE TABLE professores (
+    id_professor VARCHAR2(2) CONSTRAINT id_professor_nn NOT NULL,
+    nome_professor VARCHAR2(50)
+);
+CREATE UNIQUE INDEX id_professor_pk
+ON professores (id_professor);
+
+ALTER TABLE professores
+ADD ( CONSTRAINT id_professor_pk
+       		 PRIMARY KEY (id_professor)
+    ) ;
+--criando a tabela disciplinas
+CREATE TABLE disciplinas (
+    id_disciplina NUMBER(1) CONSTRAINT id_disciplina_nn NOT NULL,
+    nome_disciplina VARCHAR2(50)
+);
+CREATE UNIQUE INDEX id_disciplina_pk
+ON disciplinas (id_disciplina);
+
+ALTER TABLE disciplinas
+ADD ( CONSTRAINT id_disciplina_pk
+       		 PRIMARY KEY (id_disciplina)
+    ) ;
+--criando a tabela notas
+CREATE TABLE notas (
+    id_nota NUMBER(3) CONSTRAINT id_nota_nn NOT NULL,
+    id_aluno NUMBER(2),
+    id_disciplina NUMBER(1),
+    id_curso VARCHAR2(5),
+    id_turma VARCHAR2 (5),
+    id_professor VARCHAR2(2),
+    id_trimestre VARCHAR2(10),
+    nota NUMBER(2) 
+);
+CREATE UNIQUE INDEX id_nota_pk
+ON notas (id_nota);
+
+ALTER TABLE notas
+ADD (   
+        CONSTRAINT id_nota_pk
+       		PRIMARY KEY (id_nota),
+        CONSTRAINT aluno_nota_fk
+        	FOREIGN KEY (id_aluno)
+          	REFERENCES alunos(id_aluno),
+        CONSTRAINT disciplina_nota_fk
+        	FOREIGN KEY (id_disciplina)
+          	REFERENCES disciplinas(id_disciplina),
+        CONSTRAINT professor_nota_fk
+            FOREIGN KEY (id_professor)
+            REFERENCES professores(id_professor)
+    );
+
+--populando a tabela alunos
+INSERT INTO alunos VALUES (1,'joao da silva');
+INSERT INTO alunos VALUES (2,'camila pereira');
+INSERT INTO alunos VALUES (3,'luiza pires');
+INSERT INTO alunos VALUES (4,'isabela marques');
+INSERT INTO alunos VALUES (5,'matheus oliveira');
+INSERT INTO alunos VALUES (6,'gabriele monteiro');
+INSERT INTO alunos VALUES (7,'rebeca carvalho');
+INSERT INTO alunos VALUES (8,'roberto ferreira');
+INSERT INTO alunos VALUES (9,'eduardo rodrigues');
+INSERT INTO alunos VALUES (10,'alessandra de carvalho');
+INSERT INTO alunos VALUES (11,'maria dos santos');
+INSERT INTO alunos VALUES (12,'julia martins');
+INSERT INTO alunos VALUES (13,'pedro alves');
+INSERT INTO alunos VALUES (14,'carlos pereira');
+INSERT INTO alunos VALUES (15,'enzo lima');
+INSERT INTO alunos VALUES (16,'lucas santos');
+INSERT INTO alunos VALUES (17,'eleonora gomes');
+INSERT INTO alunos VALUES (18,'bianca rodrigues');
+INSERT INTO alunos VALUES (19,'ricardo alves');
+INSERT INTO alunos VALUES (20,'melody moreira');
+
+--populando a tabela professores
+INSERT INTO professores VALUES ('p1','Claudio Redondo Taveiros');
+INSERT INTO professores VALUES ('p2','Salomao Peixoto Cortes');
+INSERT INTO professores VALUES ('p3','Maya Rijo Galante');
+INSERT INTO professores VALUES ('p4','Oriana Belchiorinho');
+INSERT INTO professores VALUES ('p5','Alessandro Carreiro Carrasco');
+INSERT INTO professores VALUES ('p6','Matheus Barreira');
+INSERT INTO professores VALUES ('p7','Anita Quintanilha');
+
+--populando a tabela disciplinas
+INSERT INTO disciplinas VALUES (1,'Calculo III');
+INSERT INTO disciplinas VALUES (2,'Banco de Dados');
+INSERT INTO disciplinas VALUES (3,'Programacao');
+INSERT INTO disciplinas VALUES (4,'Cloud Computing');
+INSERT INTO disciplinas VALUES (5,'Inteligencia Artificial');
+INSERT INTO disciplinas VALUES (6,'Fisica');
+INSERT INTO disciplinas VALUES (7,'Sistemas Digitais');
+
+--populando a tabela notas
+INSERT INTO notas VALUES (1,1,1,'EC','3ECA','p1','2020/1',7);
+INSERT INTO notas VALUES (2,1,1,'EC','3ECA','p1','2020/2',5);
+INSERT INTO notas VALUES (3,1,1,'EC','3ECA','p1','2020/3',5);
+INSERT INTO notas VALUES (4,1,2,'EC','3ECA','p2','2020/1',9);
+INSERT INTO notas VALUES (5,1,2,'EC','3ECA','p2','2020/2',9);
+INSERT INTO notas VALUES (6,1,2,'EC','3ECA','p2','2020/3',5);
+INSERT INTO notas VALUES (7,1,3,'EC','3ECA','p3','2020/1',8);
+INSERT INTO notas VALUES (8,1,3,'EC','3ECA','p3','2020/2',10);
+INSERT INTO notas VALUES (9,1,3,'EC','3ECA','p3','2020/3',7);
+INSERT INTO notas VALUES (10,1,4,'EC','3ECA','p4','2020/1',6);
+INSERT INTO notas VALUES (11,1,4,'EC','3ECA','p4','2020/2',7);
+INSERT INTO notas VALUES (12,1,4,'EC','3ECA','p4','2020/3',6);
+INSERT INTO notas VALUES (13,1,5,'EC','3ECA','p5','2020/1',10);
+INSERT INTO notas VALUES (14,1,5,'EC','3ECA','p5','2020/2',10);
+INSERT INTO notas VALUES (15,1,5,'EC','3ECA','p5','2020/3',10);
+INSERT INTO notas VALUES (16,1,6,'EC','3ECA','p6','2020/1',8);
+INSERT INTO notas VALUES (17,1,6,'EC','3ECA','p6','2020/2',7);
+INSERT INTO notas VALUES (18,1,6,'EC','3ECA','p6','2020/3',7);
+INSERT INTO notas VALUES (19,1,7,'EC','3ECA','p7','2020/1',8);
+INSERT INTO notas VALUES (20,1,7,'EC','3ECA','p7','2020/2',9);
+INSERT INTO notas VALUES (21,1,7,'EC','3ECA','p7','2020/3',6);
+INSERT INTO notas VALUES (22,2,1,'EC','3ECA','p1','2020/1',10);
+INSERT INTO notas VALUES (23,2,1,'EC','3ECA','p1','2020/2',9);
+INSERT INTO notas VALUES (24,2,1,'EC','3ECA','p1','2020/3',10);
+INSERT INTO notas VALUES (25,2,2,'EC','3ECA','p2','2020/1',8);
+INSERT INTO notas VALUES (26,2,2,'EC','3ECA','p2','2020/2',6);
+INSERT INTO notas VALUES (27,2,2,'EC','3ECA','p2','2020/3',6);
+INSERT INTO notas VALUES (28,2,3,'EC','3ECA','p3','2020/1',6);
+INSERT INTO notas VALUES (29,2,3,'EC','3ECA','p3','2020/2',5);
+INSERT INTO notas VALUES (30,2,3,'EC','3ECA','p3','2020/3',8);
+INSERT INTO notas VALUES (31,2,4,'EC','3ECA','p4','2020/1',9);
+INSERT INTO notas VALUES (32,2,4,'EC','3ECA','p4','2020/2',10);
+INSERT INTO notas VALUES (33,2,4,'EC','3ECA','p4','2020/3',8);
+INSERT INTO notas VALUES (34,2,5,'EC','3ECA','p5','2020/1',4);
+INSERT INTO notas VALUES (35,2,5,'EC','3ECA','p5','2020/2',9);
+INSERT INTO notas VALUES (36,2,5,'EC','3ECA','p5','2020/3',10);
+INSERT INTO notas VALUES (37,2,6,'EC','3ECA','p6','2020/1',7);
+INSERT INTO notas VALUES (38,2,6,'EC','3ECA','p6','2020/2',7);
+INSERT INTO notas VALUES (39,2,6,'EC','3ECA','p6','2020/3',5);
+INSERT INTO notas VALUES (40,2,7,'EC','3ECA','p7','2020/1',4);
+INSERT INTO notas VALUES (41,2,7,'EC','3ECA','p7','2020/2',5);
+INSERT INTO notas VALUES (42,2,7,'EC','3ECA','p7','2020/3',8);
+INSERT INTO notas VALUES (43,3,1,'EC','3ECA','p1','2020/1',10);
+INSERT INTO notas VALUES (44,3,1,'EC','3ECA','p1','2020/2',8);
+INSERT INTO notas VALUES (45,3,1,'EC','3ECA','p1','2020/3',4);
+INSERT INTO notas VALUES (46,3,2,'EC','3ECA','p2','2020/1',10);
+INSERT INTO notas VALUES (47,3,2,'EC','3ECA','p2','2020/2',10);
+INSERT INTO notas VALUES (48,3,2,'EC','3ECA','p2','2020/3',4);
+INSERT INTO notas VALUES (49,3,3,'EC','3ECA','p3','2020/1',4);
+INSERT INTO notas VALUES (50,3,3,'EC','3ECA','p3','2020/2',6);
+INSERT INTO notas VALUES (51,3,3,'EC','3ECA','p3','2020/3',6);
+INSERT INTO notas VALUES (52,3,4,'EC','3ECA','p4','2020/1',7);
+INSERT INTO notas VALUES (53,3,4,'EC','3ECA','p4','2020/2',8);
+INSERT INTO notas VALUES (54,3,4,'EC','3ECA','p4','2020/3',7);
+INSERT INTO notas VALUES (55,3,5,'EC','3ECA','p5','2020/1',5);
+INSERT INTO notas VALUES (56,3,5,'EC','3ECA','p5','2020/2',9);
+INSERT INTO notas VALUES (57,3,5,'EC','3ECA','p5','2020/3',9);
+INSERT INTO notas VALUES (58,3,6,'EC','3ECA','p6','2020/1',8);
+INSERT INTO notas VALUES (59,3,6,'EC','3ECA','p6','2020/2',10);
+INSERT INTO notas VALUES (60,3,6,'EC','3ECA','p6','2020/3',7);
+INSERT INTO notas VALUES (61,3,7,'EC','3ECA','p7','2020/1',5);
+INSERT INTO notas VALUES (62,3,7,'EC','3ECA','p7','2020/2',5);
+INSERT INTO notas VALUES (63,3,7,'EC','3ECA','p7','2020/3',5);
+INSERT INTO notas VALUES (64,4,1,'EC','3ECA','p1','2020/1',7);
+INSERT INTO notas VALUES (65,4,1,'EC','3ECA','p1','2020/2',4);
+INSERT INTO notas VALUES (66,4,1,'EC','3ECA','p1','2020/3',9);
+INSERT INTO notas VALUES (67,4,2,'EC','3ECA','p2','2020/1',8);
+INSERT INTO notas VALUES (68,4,2,'EC','3ECA','p2','2020/2',10);
+INSERT INTO notas VALUES (69,4,2,'EC','3ECA','p2','2020/3',5);
+INSERT INTO notas VALUES (70,4,3,'EC','3ECA','p3','2020/1',10);
+INSERT INTO notas VALUES (71,4,3,'EC','3ECA','p3','2020/2',7);
+INSERT INTO notas VALUES (72,4,3,'EC','3ECA','p3','2020/3',4);
+INSERT INTO notas VALUES (73,4,4,'EC','3ECA','p4','2020/1',5);
+INSERT INTO notas VALUES (74,4,4,'EC','3ECA','p4','2020/2',10);
+INSERT INTO notas VALUES (75,4,4,'EC','3ECA','p4','2020/3',4);
+INSERT INTO notas VALUES (76,4,5,'EC','3ECA','p5','2020/1',10);
+INSERT INTO notas VALUES (77,4,5,'EC','3ECA','p5','2020/2',4);
+INSERT INTO notas VALUES (78,4,5,'EC','3ECA','p5','2020/3',8);
+INSERT INTO notas VALUES (79,4,6,'EC','3ECA','p6','2020/1',5);
+INSERT INTO notas VALUES (80,4,6,'EC','3ECA','p6','2020/2',4);
+INSERT INTO notas VALUES (81,4,6,'EC','3ECA','p6','2020/3',6);
+INSERT INTO notas VALUES (82,4,7,'EC','3ECA','p7','2020/1',10);
+INSERT INTO notas VALUES (83,4,7,'EC','3ECA','p7','2020/2',10);
+INSERT INTO notas VALUES (84,4,7,'EC','3ECA','p7','2020/3',5);
+INSERT INTO notas VALUES (85,5,1,'EC','3ECA','p1','2020/1',9);
+INSERT INTO notas VALUES (86,5,1,'EC','3ECA','p1','2020/2',10);
+INSERT INTO notas VALUES (87,5,1,'EC','3ECA','p1','2020/3',4);
+INSERT INTO notas VALUES (88,5,2,'EC','3ECA','p2','2020/1',6);
+INSERT INTO notas VALUES (89,5,2,'EC','3ECA','p2','2020/2',9);
+INSERT INTO notas VALUES (90,5,2,'EC','3ECA','p2','2020/3',6);
+INSERT INTO notas VALUES (91,5,3,'EC','3ECA','p3','2020/1',4);
+INSERT INTO notas VALUES (92,5,3,'EC','3ECA','p3','2020/2',8);
+INSERT INTO notas VALUES (93,5,3,'EC','3ECA','p3','2020/3',5);
+INSERT INTO notas VALUES (94,5,4,'EC','3ECA','p4','2020/1',7);
+INSERT INTO notas VALUES (95,5,4,'EC','3ECA','p4','2020/2',5);
+INSERT INTO notas VALUES (96,5,4,'EC','3ECA','p4','2020/3',6);
+INSERT INTO notas VALUES (97,5,5,'EC','3ECA','p5','2020/1',8);
+INSERT INTO notas VALUES (98,5,5,'EC','3ECA','p5','2020/2',5);
+INSERT INTO notas VALUES (99,5,5,'EC','3ECA','p5','2020/3',5);
+INSERT INTO notas VALUES (100,5,6,'EC','3ECA','p6','2020/1',9);
+INSERT INTO notas VALUES (101,5,6,'EC','3ECA','p6','2020/2',6);
+INSERT INTO notas VALUES (102,5,6,'EC','3ECA','p6','2020/3',6);
+INSERT INTO notas VALUES (103,5,7,'EC','3ECA','p7','2020/1',8);
+INSERT INTO notas VALUES (104,5,7,'EC','3ECA','p7','2020/2',5);
+INSERT INTO notas VALUES (105,5,7,'EC','3ECA','p7','2020/3',9);
+INSERT INTO notas VALUES (106,6,1,'EC','3ECA','p1','2020/1',9);
+INSERT INTO notas VALUES (107,6,1,'EC','3ECA','p1','2020/2',7);
+INSERT INTO notas VALUES (108,6,1,'EC','3ECA','p1','2020/3',7);
+INSERT INTO notas VALUES (109,6,2,'EC','3ECA','p2','2020/1',9);
+INSERT INTO notas VALUES (110,6,2,'EC','3ECA','p2','2020/2',5);
+INSERT INTO notas VALUES (111,6,2,'EC','3ECA','p2','2020/3',4);
+INSERT INTO notas VALUES (112,6,3,'EC','3ECA','p3','2020/1',10);
+INSERT INTO notas VALUES (113,6,3,'EC','3ECA','p3','2020/2',9);
+INSERT INTO notas VALUES (114,6,3,'EC','3ECA','p3','2020/3',10);
+INSERT INTO notas VALUES (115,6,4,'EC','3ECA','p4','2020/1',5);
+INSERT INTO notas VALUES (116,6,4,'EC','3ECA','p4','2020/2',4);
+INSERT INTO notas VALUES (117,6,4,'EC','3ECA','p4','2020/3',7);
+INSERT INTO notas VALUES (118,6,5,'EC','3ECA','p5','2020/1',9);
+INSERT INTO notas VALUES (119,6,5,'EC','3ECA','p5','2020/2',4);
+INSERT INTO notas VALUES (120,6,5,'EC','3ECA','p5','2020/3',6);
+INSERT INTO notas VALUES (121,6,6,'EC','3ECA','p6','2020/1',9);
+INSERT INTO notas VALUES (122,6,6,'EC','3ECA','p6','2020/2',8);
+INSERT INTO notas VALUES (123,6,6,'EC','3ECA','p6','2020/3',9);
+INSERT INTO notas VALUES (124,6,7,'EC','3ECA','p7','2020/1',6);
+INSERT INTO notas VALUES (125,6,7,'EC','3ECA','p7','2020/2',9);
+INSERT INTO notas VALUES (126,6,7,'EC','3ECA','p7','2020/3',4);
+INSERT INTO notas VALUES (127,7,1,'EC','3ECA','p1','2020/1',9);
+INSERT INTO notas VALUES (128,7,1,'EC','3ECA','p1','2020/2',9);
+INSERT INTO notas VALUES (129,7,1,'EC','3ECA','p1','2020/3',5);
+INSERT INTO notas VALUES (130,7,2,'EC','3ECA','p2','2020/1',10);
+INSERT INTO notas VALUES (131,7,2,'EC','3ECA','p2','2020/2',6);
+INSERT INTO notas VALUES (132,7,2,'EC','3ECA','p2','2020/3',6);
+INSERT INTO notas VALUES (133,7,3,'EC','3ECA','p3','2020/1',10);
+INSERT INTO notas VALUES (134,7,3,'EC','3ECA','p3','2020/2',10);
+INSERT INTO notas VALUES (135,7,3,'EC','3ECA','p3','2020/3',9);
+INSERT INTO notas VALUES (136,7,4,'EC','3ECA','p4','2020/1',8);
+INSERT INTO notas VALUES (137,7,4,'EC','3ECA','p4','2020/2',8);
+INSERT INTO notas VALUES (138,7,4,'EC','3ECA','p4','2020/3',4);
+INSERT INTO notas VALUES (139,7,5,'EC','3ECA','p5','2020/1',7);
+INSERT INTO notas VALUES (140,7,5,'EC','3ECA','p5','2020/2',8);
+INSERT INTO notas VALUES (141,7,5,'EC','3ECA','p5','2020/3',8);
+INSERT INTO notas VALUES (142,7,6,'EC','3ECA','p6','2020/1',6);
+INSERT INTO notas VALUES (143,7,6,'EC','3ECA','p6','2020/2',4);
+INSERT INTO notas VALUES (144,7,6,'EC','3ECA','p6','2020/3',5);
+INSERT INTO notas VALUES (145,7,7,'EC','3ECA','p7','2020/1',7);
+INSERT INTO notas VALUES (146,7,7,'EC','3ECA','p7','2020/2',6);
+INSERT INTO notas VALUES (147,7,7,'EC','3ECA','p7','2020/3',7);
+INSERT INTO notas VALUES (148,8,1,'EC','3ECA','p1','2020/1',10);
+INSERT INTO notas VALUES (149,8,1,'EC','3ECA','p1','2020/2',10);
+INSERT INTO notas VALUES (150,8,1,'EC','3ECA','p1','2020/3',7);
+INSERT INTO notas VALUES (151,8,2,'EC','3ECA','p2','2020/1',7);
+INSERT INTO notas VALUES (152,8,2,'EC','3ECA','p2','2020/2',4);
+INSERT INTO notas VALUES (153,8,2,'EC','3ECA','p2','2020/3',4);
+INSERT INTO notas VALUES (154,8,3,'EC','3ECA','p3','2020/1',7);
+INSERT INTO notas VALUES (155,8,3,'EC','3ECA','p3','2020/2',10);
+INSERT INTO notas VALUES (156,8,3,'EC','3ECA','p3','2020/3',10);
+INSERT INTO notas VALUES (157,8,4,'EC','3ECA','p4','2020/1',6);
+INSERT INTO notas VALUES (158,8,4,'EC','3ECA','p4','2020/2',6);
+INSERT INTO notas VALUES (159,8,4,'EC','3ECA','p4','2020/3',9);
+INSERT INTO notas VALUES (160,8,5,'EC','3ECA','p5','2020/1',10);
+INSERT INTO notas VALUES (161,8,5,'EC','3ECA','p5','2020/2',4);
+INSERT INTO notas VALUES (162,8,5,'EC','3ECA','p5','2020/3',7);
+INSERT INTO notas VALUES (163,8,6,'EC','3ECA','p6','2020/1',7);
+INSERT INTO notas VALUES (164,8,6,'EC','3ECA','p6','2020/2',4);
+INSERT INTO notas VALUES (165,8,6,'EC','3ECA','p6','2020/3',6);
+INSERT INTO notas VALUES (166,8,7,'EC','3ECA','p7','2020/1',6);
+INSERT INTO notas VALUES (167,8,7,'EC','3ECA','p7','2020/2',9);
+INSERT INTO notas VALUES (168,8,7,'EC','3ECA','p7','2020/3',7);
+INSERT INTO notas VALUES (169,9,1,'EC','3ECA','p1','2020/1',10);
+INSERT INTO notas VALUES (170,9,1,'EC','3ECA','p1','2020/2',8);
+INSERT INTO notas VALUES (171,9,1,'EC','3ECA','p1','2020/3',6);
+INSERT INTO notas VALUES (172,9,2,'EC','3ECA','p2','2020/1',10);
+INSERT INTO notas VALUES (173,9,2,'EC','3ECA','p2','2020/2',8);
+INSERT INTO notas VALUES (174,9,2,'EC','3ECA','p2','2020/3',8);
+INSERT INTO notas VALUES (175,9,3,'EC','3ECA','p3','2020/1',7);
+INSERT INTO notas VALUES (176,9,3,'EC','3ECA','p3','2020/2',9);
+INSERT INTO notas VALUES (177,9,3,'EC','3ECA','p3','2020/3',6);
+INSERT INTO notas VALUES (178,9,4,'EC','3ECA','p4','2020/1',10);
+INSERT INTO notas VALUES (179,9,4,'EC','3ECA','p4','2020/2',4);
+INSERT INTO notas VALUES (180,9,4,'EC','3ECA','p4','2020/3',6);
+INSERT INTO notas VALUES (181,9,5,'EC','3ECA','p5','2020/1',8);
+INSERT INTO notas VALUES (182,9,5,'EC','3ECA','p5','2020/2',4);
+INSERT INTO notas VALUES (183,9,5,'EC','3ECA','p5','2020/3',5);
+INSERT INTO notas VALUES (184,9,6,'EC','3ECA','p6','2020/1',8);
+INSERT INTO notas VALUES (185,9,6,'EC','3ECA','p6','2020/2',9);
+INSERT INTO notas VALUES (186,9,6,'EC','3ECA','p6','2020/3',6);
+INSERT INTO notas VALUES (187,9,7,'EC','3ECA','p7','2020/1',7);
+INSERT INTO notas VALUES (188,9,7,'EC','3ECA','p7','2020/2',7);
+INSERT INTO notas VALUES (189,9,7,'EC','3ECA','p7','2020/3',4);
+INSERT INTO notas VALUES (190,10,1,'EC','3ECA','p1','2020/1',4);
+INSERT INTO notas VALUES (191,10,1,'EC','3ECA','p1','2020/2',8);
+INSERT INTO notas VALUES (192,10,1,'EC','3ECA','p1','2020/3',4);
+INSERT INTO notas VALUES (193,10,2,'EC','3ECA','p2','2020/1',7);
+INSERT INTO notas VALUES (194,10,2,'EC','3ECA','p2','2020/2',10);
+INSERT INTO notas VALUES (195,10,2,'EC','3ECA','p2','2020/3',4);
+INSERT INTO notas VALUES (196,10,3,'EC','3ECA','p3','2020/1',10);
+INSERT INTO notas VALUES (197,10,3,'EC','3ECA','p3','2020/2',4);
+INSERT INTO notas VALUES (198,10,3,'EC','3ECA','p3','2020/3',7);
+INSERT INTO notas VALUES (199,10,4,'EC','3ECA','p4','2020/1',7);
+INSERT INTO notas VALUES (200,10,4,'EC','3ECA','p4','2020/2',6);
+INSERT INTO notas VALUES (201,10,4,'EC','3ECA','p4','2020/3',5);
+INSERT INTO notas VALUES (202,10,5,'EC','3ECA','p5','2020/1',5);
+INSERT INTO notas VALUES (203,10,5,'EC','3ECA','p5','2020/2',9);
+INSERT INTO notas VALUES (204,10,5,'EC','3ECA','p5','2020/3',9);
+INSERT INTO notas VALUES (205,10,6,'EC','3ECA','p6','2020/1',8);
+INSERT INTO notas VALUES (206,10,6,'EC','3ECA','p6','2020/2',7);
+INSERT INTO notas VALUES (207,10,6,'EC','3ECA','p6','2020/3',8);
+INSERT INTO notas VALUES (208,10,7,'EC','3ECA','p7','2020/1',10);
+INSERT INTO notas VALUES (209,10,7,'EC','3ECA','p7','2020/2',7);
+INSERT INTO notas VALUES (210,10,7,'EC','3ECA','p7','2020/3',4);
+INSERT INTO notas VALUES (211,11,1,'EC','3ECB','p1','2020/1',7);
+INSERT INTO notas VALUES (212,11,1,'EC','3ECB','p1','2020/2',5);
+INSERT INTO notas VALUES (213,11,1,'EC','3ECB','p1','2020/3',5);
+INSERT INTO notas VALUES (214,11,2,'EC','3ECB','p2','2020/1',8);
+INSERT INTO notas VALUES (215,11,2,'EC','3ECB','p2','2020/2',8);
+INSERT INTO notas VALUES (216,11,2,'EC','3ECB','p2','2020/3',4);
+INSERT INTO notas VALUES (217,11,3,'EC','3ECB','p3','2020/1',4);
+INSERT INTO notas VALUES (218,11,3,'EC','3ECB','p3','2020/2',4);
+INSERT INTO notas VALUES (219,11,3,'EC','3ECB','p3','2020/3',4);
+INSERT INTO notas VALUES (220,11,4,'EC','3ECB','p4','2020/1',4);
+INSERT INTO notas VALUES (221,11,4,'EC','3ECB','p4','2020/2',9);
+INSERT INTO notas VALUES (222,11,4,'EC','3ECB','p4','2020/3',8);
+INSERT INTO notas VALUES (223,11,5,'EC','3ECB','p5','2020/1',5);
+INSERT INTO notas VALUES (224,11,5,'EC','3ECB','p5','2020/2',9);
+INSERT INTO notas VALUES (225,11,5,'EC','3ECB','p5','2020/3',8);
+INSERT INTO notas VALUES (226,11,6,'EC','3ECB','p6','2020/1',5);
+INSERT INTO notas VALUES (227,11,6,'EC','3ECB','p6','2020/2',5);
+INSERT INTO notas VALUES (228,11,6,'EC','3ECB','p6','2020/3',7);
+INSERT INTO notas VALUES (229,11,7,'EC','3ECB','p7','2020/1',5);
+INSERT INTO notas VALUES (230,11,7,'EC','3ECB','p7','2020/2',7);
+INSERT INTO notas VALUES (231,11,7,'EC','3ECB','p7','2020/3',7);
+INSERT INTO notas VALUES (232,12,1,'EC','3ECB','p1','2020/1',9);
+INSERT INTO notas VALUES (233,12,1,'EC','3ECB','p1','2020/2',8);
+INSERT INTO notas VALUES (234,12,1,'EC','3ECB','p1','2020/3',4);
+INSERT INTO notas VALUES (235,12,2,'EC','3ECB','p2','2020/1',9);
+INSERT INTO notas VALUES (236,12,2,'EC','3ECB','p2','2020/2',7);
+INSERT INTO notas VALUES (237,12,2,'EC','3ECB','p2','2020/3',5);
+INSERT INTO notas VALUES (238,12,3,'EC','3ECB','p3','2020/1',8);
+INSERT INTO notas VALUES (239,12,3,'EC','3ECB','p3','2020/2',10);
+INSERT INTO notas VALUES (240,12,3,'EC','3ECB','p3','2020/3',8);
+INSERT INTO notas VALUES (241,12,4,'EC','3ECB','p4','2020/1',10);
+INSERT INTO notas VALUES (242,12,4,'EC','3ECB','p4','2020/2',6);
+INSERT INTO notas VALUES (243,12,4,'EC','3ECB','p4','2020/3',8);
+INSERT INTO notas VALUES (244,12,5,'EC','3ECB','p5','2020/1',7);
+INSERT INTO notas VALUES (245,12,5,'EC','3ECB','p5','2020/2',5);
+INSERT INTO notas VALUES (246,12,5,'EC','3ECB','p5','2020/3',5);
+INSERT INTO notas VALUES (247,12,6,'EC','3ECB','p6','2020/1',9);
+INSERT INTO notas VALUES (248,12,6,'EC','3ECB','p6','2020/2',7);
+INSERT INTO notas VALUES (249,12,6,'EC','3ECB','p6','2020/3',9);
+INSERT INTO notas VALUES (250,12,7,'EC','3ECB','p7','2020/1',4);
+INSERT INTO notas VALUES (251,12,7,'EC','3ECB','p7','2020/2',6);
+INSERT INTO notas VALUES (252,12,7,'EC','3ECB','p7','2020/3',6);
+INSERT INTO notas VALUES (253,13,1,'EC','3ECB','p1','2020/1',4);
+INSERT INTO notas VALUES (254,13,1,'EC','3ECB','p1','2020/2',9);
+INSERT INTO notas VALUES (255,13,1,'EC','3ECB','p1','2020/3',7);
+INSERT INTO notas VALUES (256,13,2,'EC','3ECB','p2','2020/1',10);
+INSERT INTO notas VALUES (257,13,2,'EC','3ECB','p2','2020/2',6);
+INSERT INTO notas VALUES (258,13,2,'EC','3ECB','p2','2020/3',9);
+INSERT INTO notas VALUES (259,13,3,'EC','3ECB','p3','2020/1',8);
+INSERT INTO notas VALUES (260,13,3,'EC','3ECB','p3','2020/2',8);
+INSERT INTO notas VALUES (261,13,3,'EC','3ECB','p3','2020/3',7);
+INSERT INTO notas VALUES (262,13,4,'EC','3ECB','p4','2020/1',6);
+INSERT INTO notas VALUES (263,13,4,'EC','3ECB','p4','2020/2',6);
+INSERT INTO notas VALUES (264,13,4,'EC','3ECB','p4','2020/3',4);
+INSERT INTO notas VALUES (265,13,5,'EC','3ECB','p5','2020/1',7);
+INSERT INTO notas VALUES (266,13,5,'EC','3ECB','p5','2020/2',6);
+INSERT INTO notas VALUES (267,13,5,'EC','3ECB','p5','2020/3',9);
+INSERT INTO notas VALUES (268,13,6,'EC','3ECB','p6','2020/1',5);
+INSERT INTO notas VALUES (269,13,6,'EC','3ECB','p6','2020/2',10);
+INSERT INTO notas VALUES (270,13,6,'EC','3ECB','p6','2020/3',4);
+INSERT INTO notas VALUES (271,13,7,'EC','3ECB','p7','2020/1',7);
+INSERT INTO notas VALUES (272,13,7,'EC','3ECB','p7','2020/2',10);
+INSERT INTO notas VALUES (273,13,7,'EC','3ECB','p7','2020/3',5);
+INSERT INTO notas VALUES (274,14,1,'EC','3ECB','p1','2020/1',9);
+INSERT INTO notas VALUES (275,14,1,'EC','3ECB','p1','2020/2',4);
+INSERT INTO notas VALUES (276,14,1,'EC','3ECB','p1','2020/3',7);
+INSERT INTO notas VALUES (277,14,2,'EC','3ECB','p2','2020/1',4);
+INSERT INTO notas VALUES (278,14,2,'EC','3ECB','p2','2020/2',5);
+INSERT INTO notas VALUES (279,14,2,'EC','3ECB','p2','2020/3',7);
+INSERT INTO notas VALUES (280,14,3,'EC','3ECB','p3','2020/1',6);
+INSERT INTO notas VALUES (281,14,3,'EC','3ECB','p3','2020/2',8);
+INSERT INTO notas VALUES (282,14,3,'EC','3ECB','p3','2020/3',7);
+INSERT INTO notas VALUES (283,14,4,'EC','3ECB','p4','2020/1',6);
+INSERT INTO notas VALUES (284,14,4,'EC','3ECB','p4','2020/2',10);
+INSERT INTO notas VALUES (285,14,4,'EC','3ECB','p4','2020/3',10);
+INSERT INTO notas VALUES (286,14,5,'EC','3ECB','p5','2020/1',8);
+INSERT INTO notas VALUES (287,14,5,'EC','3ECB','p5','2020/2',8);
+INSERT INTO notas VALUES (288,14,5,'EC','3ECB','p5','2020/3',7);
+INSERT INTO notas VALUES (289,14,6,'EC','3ECB','p6','2020/1',10);
+INSERT INTO notas VALUES (290,14,6,'EC','3ECB','p6','2020/2',5);
+INSERT INTO notas VALUES (291,14,6,'EC','3ECB','p6','2020/3',9);
+INSERT INTO notas VALUES (292,14,7,'EC','3ECB','p7','2020/1',5);
+INSERT INTO notas VALUES (293,14,7,'EC','3ECB','p7','2020/2',9);
+INSERT INTO notas VALUES (294,14,7,'EC','3ECB','p7','2020/3',9);
+INSERT INTO notas VALUES (295,15,1,'EC','3ECB','p1','2020/1',10);
+INSERT INTO notas VALUES (296,15,1,'EC','3ECB','p1','2020/2',5);
+INSERT INTO notas VALUES (297,15,1,'EC','3ECB','p1','2020/3',7);
+INSERT INTO notas VALUES (298,15,2,'EC','3ECB','p2','2020/1',10);
+INSERT INTO notas VALUES (299,15,2,'EC','3ECB','p2','2020/2',6);
+INSERT INTO notas VALUES (300,15,2,'EC','3ECB','p2','2020/3',9);
+INSERT INTO notas VALUES (301,15,3,'EC','3ECB','p3','2020/1',5);
+INSERT INTO notas VALUES (302,15,3,'EC','3ECB','p3','2020/2',6);
+INSERT INTO notas VALUES (303,15,3,'EC','3ECB','p3','2020/3',9);
+INSERT INTO notas VALUES (304,15,4,'EC','3ECB','p4','2020/1',8);
+INSERT INTO notas VALUES (305,15,4,'EC','3ECB','p4','2020/2',8);
+INSERT INTO notas VALUES (306,15,4,'EC','3ECB','p4','2020/3',10);
+INSERT INTO notas VALUES (307,15,5,'EC','3ECB','p5','2020/1',10);
+INSERT INTO notas VALUES (308,15,5,'EC','3ECB','p5','2020/2',4);
+INSERT INTO notas VALUES (309,15,5,'EC','3ECB','p5','2020/3',5);
+INSERT INTO notas VALUES (310,15,6,'EC','3ECB','p6','2020/1',10);
+INSERT INTO notas VALUES (311,15,6,'EC','3ECB','p6','2020/2',5);
+INSERT INTO notas VALUES (312,15,6,'EC','3ECB','p6','2020/3',7);
+INSERT INTO notas VALUES (313,15,7,'EC','3ECB','p7','2020/1',5);
+INSERT INTO notas VALUES (314,15,7,'EC','3ECB','p7','2020/2',8);
+INSERT INTO notas VALUES (315,15,7,'EC','3ECB','p7','2020/3',9);
+INSERT INTO notas VALUES (316,16,1,'EC','3ECB','p1','2020/1',5);
+INSERT INTO notas VALUES (317,16,1,'EC','3ECB','p1','2020/2',10);
+INSERT INTO notas VALUES (318,16,1,'EC','3ECB','p1','2020/3',10);
+INSERT INTO notas VALUES (319,16,2,'EC','3ECB','p2','2020/1',9);
+INSERT INTO notas VALUES (320,16,2,'EC','3ECB','p2','2020/2',6);
+INSERT INTO notas VALUES (321,16,2,'EC','3ECB','p2','2020/3',4);
+INSERT INTO notas VALUES (322,16,3,'EC','3ECB','p3','2020/1',7);
+INSERT INTO notas VALUES (323,16,3,'EC','3ECB','p3','2020/2',8);
+INSERT INTO notas VALUES (324,16,3,'EC','3ECB','p3','2020/3',7);
+INSERT INTO notas VALUES (325,16,4,'EC','3ECB','p4','2020/1',5);
+INSERT INTO notas VALUES (326,16,4,'EC','3ECB','p4','2020/2',6);
+INSERT INTO notas VALUES (327,16,4,'EC','3ECB','p4','2020/3',5);
+INSERT INTO notas VALUES (328,16,5,'EC','3ECB','p5','2020/1',7);
+INSERT INTO notas VALUES (329,16,5,'EC','3ECB','p5','2020/2',8);
+INSERT INTO notas VALUES (330,16,5,'EC','3ECB','p5','2020/3',5);
+INSERT INTO notas VALUES (331,16,6,'EC','3ECB','p6','2020/1',4);
+INSERT INTO notas VALUES (332,16,6,'EC','3ECB','p6','2020/2',8);
+INSERT INTO notas VALUES (333,16,6,'EC','3ECB','p6','2020/3',7);
+INSERT INTO notas VALUES (334,16,7,'EC','3ECB','p7','2020/1',7);
+INSERT INTO notas VALUES (335,16,7,'EC','3ECB','p7','2020/2',10);
+INSERT INTO notas VALUES (336,16,7,'EC','3ECB','p7','2020/3',6);
+INSERT INTO notas VALUES (337,17,1,'EC','3ECB','p1','2020/1',7);
+INSERT INTO notas VALUES (338,17,1,'EC','3ECB','p1','2020/2',5);
+INSERT INTO notas VALUES (339,17,1,'EC','3ECB','p1','2020/3',7);
+INSERT INTO notas VALUES (340,17,2,'EC','3ECB','p2','2020/1',6);
+INSERT INTO notas VALUES (341,17,2,'EC','3ECB','p2','2020/2',8);
+INSERT INTO notas VALUES (342,17,2,'EC','3ECB','p2','2020/3',6);
+INSERT INTO notas VALUES (343,17,3,'EC','3ECB','p3','2020/1',7);
+INSERT INTO notas VALUES (344,17,3,'EC','3ECB','p3','2020/2',5);
+INSERT INTO notas VALUES (345,17,3,'EC','3ECB','p3','2020/3',8);
+INSERT INTO notas VALUES (346,17,4,'EC','3ECB','p4','2020/1',7);
+INSERT INTO notas VALUES (347,17,4,'EC','3ECB','p4','2020/2',7);
+INSERT INTO notas VALUES (348,17,4,'EC','3ECB','p4','2020/3',5);
+INSERT INTO notas VALUES (349,17,5,'EC','3ECB','p5','2020/1',4);
+INSERT INTO notas VALUES (350,17,5,'EC','3ECB','p5','2020/2',10);
+INSERT INTO notas VALUES (351,17,5,'EC','3ECB','p5','2020/3',9);
+INSERT INTO notas VALUES (352,17,6,'EC','3ECB','p6','2020/1',7);
+INSERT INTO notas VALUES (353,17,6,'EC','3ECB','p6','2020/2',7);
+INSERT INTO notas VALUES (354,17,6,'EC','3ECB','p6','2020/3',10);
+INSERT INTO notas VALUES (355,17,7,'EC','3ECB','p7','2020/1',6);
+INSERT INTO notas VALUES (356,17,7,'EC','3ECB','p7','2020/2',7);
+INSERT INTO notas VALUES (357,17,7,'EC','3ECB','p7','2020/3',4);
+INSERT INTO notas VALUES (358,18,1,'EC','3ECB','p1','2020/1',10);
+INSERT INTO notas VALUES (359,18,1,'EC','3ECB','p1','2020/2',4);
+INSERT INTO notas VALUES (360,18,1,'EC','3ECB','p1','2020/3',7);
+INSERT INTO notas VALUES (361,18,2,'EC','3ECB','p2','2020/1',5);
+INSERT INTO notas VALUES (362,18,2,'EC','3ECB','p2','2020/2',10);
+INSERT INTO notas VALUES (363,18,2,'EC','3ECB','p2','2020/3',6);
+INSERT INTO notas VALUES (364,18,3,'EC','3ECB','p3','2020/1',10);
+INSERT INTO notas VALUES (365,18,3,'EC','3ECB','p3','2020/2',5);
+INSERT INTO notas VALUES (366,18,3,'EC','3ECB','p3','2020/3',8);
+INSERT INTO notas VALUES (367,18,4,'EC','3ECB','p4','2020/1',7);
+INSERT INTO notas VALUES (368,18,4,'EC','3ECB','p4','2020/2',7);
+INSERT INTO notas VALUES (369,18,4,'EC','3ECB','p4','2020/3',4);
+INSERT INTO notas VALUES (370,18,5,'EC','3ECB','p5','2020/1',7);
+INSERT INTO notas VALUES (371,18,5,'EC','3ECB','p5','2020/2',4);
+INSERT INTO notas VALUES (372,18,5,'EC','3ECB','p5','2020/3',10);
+INSERT INTO notas VALUES (373,18,6,'EC','3ECB','p6','2020/1',7);
+INSERT INTO notas VALUES (374,18,6,'EC','3ECB','p6','2020/2',9);
+INSERT INTO notas VALUES (375,18,6,'EC','3ECB','p6','2020/3',5);
+INSERT INTO notas VALUES (376,18,7,'EC','3ECB','p7','2020/1',8);
+INSERT INTO notas VALUES (377,18,7,'EC','3ECB','p7','2020/2',4);
+INSERT INTO notas VALUES (378,18,7,'EC','3ECB','p7','2020/3',7);
+INSERT INTO notas VALUES (379,19,1,'EC','3ECB','p1','2020/1',10);
+INSERT INTO notas VALUES (380,19,1,'EC','3ECB','p1','2020/2',9);
+INSERT INTO notas VALUES (381,19,1,'EC','3ECB','p1','2020/3',7);
+INSERT INTO notas VALUES (382,19,2,'EC','3ECB','p2','2020/1',7);
+INSERT INTO notas VALUES (383,19,2,'EC','3ECB','p2','2020/2',8);
+INSERT INTO notas VALUES (384,19,2,'EC','3ECB','p2','2020/3',4);
+INSERT INTO notas VALUES (385,19,3,'EC','3ECB','p3','2020/1',6);
+INSERT INTO notas VALUES (386,19,3,'EC','3ECB','p3','2020/2',9);
+INSERT INTO notas VALUES (387,19,3,'EC','3ECB','p3','2020/3',9);
+INSERT INTO notas VALUES (388,19,4,'EC','3ECB','p4','2020/1',6);
+INSERT INTO notas VALUES (389,19,4,'EC','3ECB','p4','2020/2',9);
+INSERT INTO notas VALUES (390,19,4,'EC','3ECB','p4','2020/3',6);
+INSERT INTO notas VALUES (391,19,5,'EC','3ECB','p5','2020/1',7);
+INSERT INTO notas VALUES (392,19,5,'EC','3ECB','p5','2020/2',6);
+INSERT INTO notas VALUES (393,19,5,'EC','3ECB','p5','2020/3',4);
+INSERT INTO notas VALUES (394,19,6,'EC','3ECB','p6','2020/1',8);
+INSERT INTO notas VALUES (395,19,6,'EC','3ECB','p6','2020/2',5);
+INSERT INTO notas VALUES (396,19,6,'EC','3ECB','p6','2020/3',4);
+INSERT INTO notas VALUES (397,19,7,'EC','3ECB','p7','2020/1',7);
+INSERT INTO notas VALUES (398,19,7,'EC','3ECB','p7','2020/2',9);
+INSERT INTO notas VALUES (399,19,7,'EC','3ECB','p7','2020/3',5);
+INSERT INTO notas VALUES (400,20,1,'EC','3ECB','p1','2020/1',6);
+INSERT INTO notas VALUES (401,20,1,'EC','3ECB','p1','2020/2',6);
+INSERT INTO notas VALUES (402,20,1,'EC','3ECB','p1','2020/3',10);
+INSERT INTO notas VALUES (403,20,2,'EC','3ECB','p2','2020/1',8);
+INSERT INTO notas VALUES (404,20,2,'EC','3ECB','p2','2020/2',7);
+INSERT INTO notas VALUES (405,20,2,'EC','3ECB','p2','2020/3',9);
+INSERT INTO notas VALUES (406,20,3,'EC','3ECB','p3','2020/1',4);
+INSERT INTO notas VALUES (407,20,3,'EC','3ECB','p3','2020/2',6);
+INSERT INTO notas VALUES (408,20,3,'EC','3ECB','p3','2020/3',9);
+INSERT INTO notas VALUES (409,20,4,'EC','3ECB','p4','2020/1',5);
+INSERT INTO notas VALUES (410,20,4,'EC','3ECB','p4','2020/2',7);
+INSERT INTO notas VALUES (411,20,4,'EC','3ECB','p4','2020/3',4);
+INSERT INTO notas VALUES (412,20,5,'EC','3ECB','p5','2020/1',9);
+INSERT INTO notas VALUES (413,20,5,'EC','3ECB','p5','2020/2',8);
+INSERT INTO notas VALUES (414,20,5,'EC','3ECB','p5','2020/3',5);
+INSERT INTO notas VALUES (415,20,6,'EC','3ECB','p6','2020/1',6);
+INSERT INTO notas VALUES (416,20,6,'EC','3ECB','p6','2020/2',8);
+INSERT INTO notas VALUES (417,20,6,'EC','3ECB','p6','2020/3',7);
+INSERT INTO notas VALUES (418,20,7,'EC','3ECB','p7','2020/1',7);
+INSERT INTO notas VALUES (419,20,7,'EC','3ECB','p7','2020/2',8);
+INSERT INTO notas VALUES (420,20,7,'EC','3ECB','p7','2020/3',5);
+
+COMMIT;
+

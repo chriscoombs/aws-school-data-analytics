@@ -1,0 +1,775 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "This CloudFormation Template provides the infrasctructure for school-analytics-demo",
+
+  "Parameters": {
+
+    "UserEmail": {
+      "Description": "The user e-mail to receive new data notifications.",
+      "Type": "String"
+    },
+    "KeyPairName": {
+      "Description": "The name of the Key Pair you want to use to access your database on EC2 (do not add the extension .pem)",
+      "Type": "String"
+    }
+  },
+
+  "Resources": {
+    "S3DataBucket": {
+      "DependsOn": ["LambdaInvokePermission"],
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": {
+          "Fn::Sub": "school-analytics-data-${AWS::AccountId}"
+        },
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "BlockPublicPolicy": true,
+          "IgnorePublicAcls": true,
+          "RestrictPublicBuckets": true
+        },
+        "NotificationConfiguration": {
+          "LambdaConfigurations": [{
+            "Event": "s3:ObjectCreated:*",
+            "Filter": {
+              "S3Key": {
+                "Rules": [{
+                  "Name": "prefix",
+                  "Value": "GLUE_ETL/"
+                }]
+              }
+            },
+            "Function": {
+              "Fn::GetAtt": ["Lambdajson", "Arn"]
+            }
+          }]
+        }
+      }
+    },
+    "Lambdajson": {
+      "DependsOn": "IAMRoleBasicLambda",
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Description": "Function to manipulate our glue json output",
+        "FunctionName": "manipulate-json-lambda",
+        "Handler": "index.lambda_handler",
+        "Role": {
+          "Fn::GetAtt": ["IAMRoleBasicLambda", "Arn"]
+        },
+        "Timeout": 360,
+        "Runtime": "python3.7",
+
+        "Code": {
+          "ZipFile": {
+            "Fn::Join": ["\n", [
+              "import boto3",
+              "import os",
+              "def lambda_handler(event, context):",
+              "    s3 = boto3.client('s3')",
+              "    print(event)",
+              "    #get bucket name",
+              "    bucketName= event['Records'][0]['s3']['bucket']['name']",
+              "    #get object name",
+              "    keyName = event['Records'][0]['s3']['object']['key']",
+              "    #get file from s3",
+              "    response = s3.get_object(Bucket=bucketName,Key=keyName)",
+              "    print(response)",
+              "    body = response['Body'].read()",
+              "    file = body.decode(\"utf-8\")",
+              "    #print(type(file))",
+              "    #testJson = json.loads( file )",
+              "    #print( testJson )",
+              "    file = \"[\"+file.replace(\"}\",\"},\",file.count(\"}\")-1)+\"]\"",
+              "    webbucket = os.environ['webbucketname']",
+              "    #upload file to webapp bucket",
+              "    s3.put_object(Body = file, Bucket = webbucket  , Key = 'assets/data.json')",
+              "    return {",
+              "        'statusCode': 200 ",
+              "    }"
+            ]]
+          }
+        },
+        "Environment": {
+          "Variables": {
+            "webbucketname": {
+              "Fn::Sub": "school-analytics-web-${AWS::AccountId}"
+            }
+          }
+        }
+      }
+    },
+    "LambdaInvokePermission": {
+      "DependsOn": "Lambdajson",
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "Lambdajson"
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "s3.amazonaws.com",
+        "SourceAccount": {
+          "Ref": "AWS::AccountId"
+        },
+        "SourceArn": {
+          "Fn::Sub": "arn:aws:s3:::school-analytics-data-${AWS::AccountId}"
+        }
+      }
+    },
+
+    "IAMRoleBasicLambda": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+
+        "RoleName": "laPolicia",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "lambda.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+          }]
+        },
+
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/AmazonS3FullAccess",
+          "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        ]
+
+      }
+    },
+
+    "S3Folders": {
+      "Type": "Custom::S3CustomResource",
+      "Properties": {
+
+        "ServiceToken": {
+          "Fn::GetAtt": ["S3PutObjectFunction", "Arn"]
+        },
+        "the_bucket": {
+          "Ref": "S3DataBucket"
+        },
+        "dirs_to_create": "DMS_RAW,GLUE_ETL,GLUE_SCRIPT"
+      }
+    },
+    "S3PutObjectFunction": {
+      "Type": "AWS::Lambda::Function",
+      "DependsOn": ["IAMRoleBasicLambda", "S3DataBucket"],
+      "Properties": {
+        "Description": "Create dirs into this S3 Bucket",
+        "FunctionName": "S3CreateBucketDirs",
+        "Handler": "index.lambda_handler",
+        "Role": {
+          "Fn::GetAtt": ["IAMRoleBasicLambda", "Arn"]
+        },
+        "Timeout": 360,
+        "Runtime": "python3.7",
+
+        "Code": {
+          "ZipFile": {
+            "Fn::Join": ["\n", [
+              "import boto3",
+              "import cfnresponse",
+              "def lambda_handler(event, context):",
+
+              "   the_event = event['RequestType']",
+              "   print(\"The event is: \", str(the_event))",
+              "   response_data = {}",
+              "   s3 = boto3.client('s3')",
+              "   print( event )",
+
+              "   the_bucket = event['ResourceProperties']['the_bucket']",
+              "   dirs = event['ResourceProperties']['dirs_to_create']",
+              "   dirs_to_create = dirs.split( \",\" )",
+
+              "   try:",
+
+              "       if the_event in ( 'Create', 'Update' ):",
+              "           for dir_name in dirs_to_create:",
+              "               print(\"Creating: \", str(dir_name))",
+              "               s3.put_object( Bucket = the_bucket, Key = ( dir_name + '/' ) )",
+
+              "       elif the_event == 'Delete':",
+              "           print( \"Deleting S3 Content...\" )",
+              "           botoResourse = boto3.resource('s3')",
+              "           botoResourse.Bucket(str(the_bucket)).objects.all().delete()",
+              "           print(\"Deleting Bucket data: \" )",
+
+              "       cfnresponse.send(event,context,cfnresponse.SUCCESS,response_data)",
+
+              "   except Exception as e:",
+              "       print(\"Execution failed...\")",
+              "       print(str(e))",
+              "       response_data['Data'] = str(e)",
+              "       cfnresponse.send(event,context,cfnresponse.FAILED,response_data)"
+            ]]
+          }
+        }
+      }
+    },
+
+
+    "EmailTopic": {
+      "Type": "AWS::SNS::Topic",
+      "Properties": {
+        "Subscription": [{
+          "Endpoint": {
+            "Ref": "UserEmail"
+          },
+          "Protocol": "email"
+        }],
+        "TopicName": "school-analytics-topic"
+      }
+    },
+    "EmailTopicPolicy": {
+      "DependsOn": "EmailTopic",
+      "Type": "AWS::SNS::TopicPolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "EmailTopicPolicy",
+          "Statement": [{
+            "Sid": "EmailTopicStatement",
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "states.amazonaws.com"
+            },
+            "Action": "sns:Publish",
+            "Resource": {
+              "Ref": "EmailTopic"
+            },
+            "Condition": {
+              "StringEquals": {
+                "aws:SourceAccount": {
+                  "Ref": "AWS::AccountId"
+                }
+              }
+            }
+          }]
+        },
+        "Topics": [{
+          "Ref": "EmailTopic"
+        }]
+      }
+    },
+    "OracleDBSG": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Security Group for my OracleDB on EC2",
+        "GroupName": "oracle-db-sg"
+      }
+    },
+    "EC2Oracle": {
+      "DependsOn": "OracleDBSG",
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "BlockDeviceMappings": [{
+          "DeviceName": "/dev/sda1",
+          "Ebs": {
+            "VolumeSize": "20"
+          }
+        }],
+        "ImageId": "ami-01dcdbd83c7e846ec",
+        "InstanceType": "t3.small",
+        "KeyName": {
+          "Ref": "KeyPairName"
+        },
+        "SecurityGroups": [{
+          "Ref": "OracleDBSG"
+        }],
+        "Tags": [{
+          "Key": "Name",
+          "Value": "Oracle DB"
+        }],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": ["", [
+              "#!/bin/bash -xe\n",
+              "sudo yum install wget -y\n",
+              "cd /home/ec2-user \n",
+              "wget https://download.oracle.com/otn-pub/otn_software/db-express/oracle-database-xe-18c-1.0-1.x86_64.rpm \n",
+              "sudo yum -y localinstall oracle-database*18c*\n"
+            ]]
+          }
+        }
+      }
+    },
+    "DMSReplicationInstance": {
+      "Type": "AWS::DMS::ReplicationInstance",
+      "Properties": {
+        "AllocatedStorage": 50,
+        "PubliclyAccessible": false,
+        "ReplicationInstanceClass": "dms.t3.medium",
+        "ReplicationInstanceIdentifier": "school-data-replicationinstance"
+      }
+    },
+    "IAMRoleDMS": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+
+        "RoleName": "DMS-role-for-ec2-s3",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "dms.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+          }]
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/AmazonS3FullAccess",
+          "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
+        ]
+      }
+    },
+    "SourceEndpoint": {
+      "DependsOn": ["EC2Oracle", "IAMRoleDMS"],
+      "Type": "AWS::DMS::Endpoint",
+      "Properties": {
+        "DatabaseName": "XEPDB1",
+        "EndpointIdentifier": "oracle-db-ec2-instance",
+        "EndpointType": "source",
+        "EngineName": "oracle",
+        "Password": "Analytics123",
+        "Port": 1521,
+        "ServerName": {
+          "Fn::GetAtt": ["EC2Oracle", "PrivateIp"]
+        },
+        "Username": "DMS_USER"
+      }
+    },
+    "TargetEndpoint": {
+      "DependsOn": ["S3DataBucket", "IAMRoleDMS"],
+      "Type": "AWS::DMS::Endpoint",
+      "Properties": {
+        "EndpointIdentifier": "s3-rawdata-bucket",
+        "EndpointType": "target",
+        "EngineName": "s3",
+        "ExtraConnectionAttributes": "addColumnName=true;bucketFolder=DMS_RAW;bucketName=school-data-analytics-demo-final;compressionType=NONE;csvDelimiter=,;csvRowDelimiter=\n;datePartitionEnabled=false;",
+        "S3Settings": {
+          "BucketFolder": "DMS_RAW",
+          "BucketName": {
+            "Ref": "S3DataBucket"
+          },
+          "ServiceAccessRoleArn": {
+            "Fn::GetAtt": ["IAMRoleDMS", "Arn"]
+          }
+        }
+      }
+    },
+    "ReplicationTask": {
+      "DependsOn": ["DMSReplicationInstance", "SourceEndpoint", "TargetEndpoint"],
+      "Type": "AWS::DMS::ReplicationTask",
+      "Properties": {
+        "MigrationType": "full-load",
+        "ReplicationInstanceArn": {
+          "Ref": "DMSReplicationInstance"
+        },
+        "ReplicationTaskIdentifier": "migrate-oracle-s3",
+        "SourceEndpointArn": {
+          "Ref": "SourceEndpoint"
+        },
+        "TableMappings": {
+          "Fn::Join": ["", [
+            "{         \"rules\": [",
+            "  {",
+            "        \"rule-type\": \"selection\",",
+            "        \"rule-id\": \"1\",",
+            "        \"rule-name\": \"1\",",
+            "        \"object-locator\": {",
+            "            \"schema-name\": \"PDBADMIN\",",
+            "           \"table-name\": \"NOTAS\"",
+            "        },",
+            "        \"rule-action\": \"include\",",
+            "        \"filters\": []",
+            "    },",
+            "    {",
+            "        \"rule-type\": \"selection\",",
+            "        \"rule-id\": \"2\",",
+            "        \"rule-name\": \"2\",",
+            "        \"object-locator\": {",
+            "            \"schema-name\": \"PDBADMIN\",",
+            "            \"table-name\": \"DISCIPLINAS\"",
+            "        },",
+            "        \"rule-action\": \"include\",",
+            "        \"filters\": []",
+            "    },",
+            "    {",
+            "        \"rule-type\": \"selection\",",
+            "        \"rule-id\": \"3\",",
+            "        \"rule-name\": \"3\",",
+            "        \"object-locator\": {",
+            "            \"schema-name\": \"PDBADMIN\",",
+            "            \"table-name\": \"PROFESSORES\"",
+            "        },",
+            "        \"rule-action\": \"include\",",
+            "        \"filters\": []",
+            "    },",
+            "    {",
+            "        \"rule-type\": \"selection\",",
+            "        \"rule-id\": \"4\",",
+            "        \"rule-name\": \"4\",",
+            "        \"object-locator\": {",
+            "            \"schema-name\": \"PDBADMIN\",",
+            "            \"table-name\": \"ALUNOS\"",
+            "        },",
+            "        \"rule-action\": \"include\",",
+            "        \"filters\": []",
+            "    }",
+            " ]}"
+          ]]
+        },
+        "TargetEndpointArn": {
+          "Ref": "TargetEndpoint"
+        }
+      }
+    },
+    "IAMRoleGlue": {
+      "DependsOn": "S3DataBucket",
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+
+        "RoleName": "Glue-role-analytics",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "glue.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+          }]
+        },
+        "Policies": [{
+          "PolicyName": "mygluepolicy",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [{
+                "Effect": "Allow",
+                "Action": [
+                  "glue:*",
+                  "s3:GetBucketLocation",
+                  "s3:ListBucket",
+                  "s3:ListAllMyBuckets",
+                  "s3:GetBucketAcl",
+                  "ec2:DescribeVpcEndpoints",
+                  "ec2:DescribeRouteTables",
+                  "ec2:CreateNetworkInterface",
+                  "ec2:DeleteNetworkInterface",
+                  "ec2:DescribeNetworkInterfaces",
+                  "ec2:DescribeSecurityGroups",
+                  "ec2:DescribeSubnets",
+                  "ec2:DescribeVpcAttribute",
+                  "iam:ListRolePolicies",
+                  "iam:GetRole",
+                  "iam:GetRolePolicy",
+                  "cloudwatch:PutMetricData"
+                ],
+                "Resource": [
+                  "*"
+                ]
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "s3:CreateBucket"
+                ],
+                "Resource": [
+                  "arn:aws:s3:::aws-glue-*",
+                  {
+                    "Fn::Sub": "arn:aws:s3:::school-analytics-data-${AWS::AccountId}/*"
+                  }
+                ]
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "s3:GetObject",
+                  "s3:PutObject",
+                  "s3:DeleteObject"
+                ],
+                "Resource": [
+                  "arn:aws:s3:::aws-glue-*/*",
+                  "arn:aws:s3:::*/*aws-glue-*/*",
+                  {
+                    "Fn::Sub": "arn:aws:s3:::school-analytics-data-${AWS::AccountId}/*"
+                  }
+                ]
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "s3:GetObject"
+                ],
+                "Resource": [
+                  "arn:aws:s3:::crawler-public*",
+                  "arn:aws:s3:::aws-glue-*",
+                  {
+                    "Fn::Sub": "arn:aws:s3:::school-analytics-data-${AWS::AccountId}/*"
+                  }
+                ]
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "logs:CreateLogGroup",
+                  "logs:CreateLogStream",
+                  "logs:PutLogEvents"
+                ],
+                "Resource": [
+                  "arn:aws:logs:*:*:/aws-glue/*"
+                ]
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "ec2:CreateTags",
+                  "ec2:DeleteTags"
+                ],
+                "Condition": {
+                  "ForAllValues:StringEquals": {
+                    "aws:TagKeys": [
+                      "aws-glue-service-resource"
+                    ]
+                  }
+                },
+                "Resource": [
+                  "arn:aws:ec2:*:*:network-interface/*",
+                  "arn:aws:ec2:*:*:security-group/*",
+                  "arn:aws:ec2:*:*:instance/*"
+                ]
+              }
+            ]
+          }
+        }]
+      }
+    },
+    "GlueJob": {
+      "DependsOn": ["S3Folders", "IAMRoleGlue"],
+      "Type": "AWS::Glue::Job",
+      "Properties": {
+        "Command": {
+          "Name": "glueetl",
+          "ScriptLocation": {
+            "Fn::Sub": "s3://school-analytics-data-${AWS::AccountId}/GLUE_SCRIPT/gluejob.py"
+          }
+        },
+        "Description": "ETL job that do left joins between all the tables to analyse later",
+        "Name": "MyETLjob",
+        "Role": {
+          "Fn::GetAtt": ["IAMRoleGlue", "Arn"]
+        }
+      }
+    },
+    "S3BucketWebApplication": {
+      "Type": "AWS::S3::Bucket",
+
+      "Properties": {
+        "BucketName": {
+          "Fn::Sub": "school-analytics-web-${AWS::AccountId}"
+        }
+      }
+    },
+
+    "BucketWebApplicationPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": {
+          "Ref": "S3BucketWebApplication"
+        },
+        "PolicyDocument": {
+          "Id": "MyPolicy",
+          "Statement": [{
+            "Sid": "Grant a CloudFront Origin Identity access to support private content",
+            "Effect": "Allow",
+            "Action": ["s3:GetObject"],
+            "Principal": {
+              "AWS": {
+                "Fn::Sub": "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginAccessIdentity}"
+              }
+            },
+            "Resource": {
+              "Fn::Join": ["", ["arn:aws:s3:::", {
+                "Ref": "S3BucketWebApplication"
+              }, "/*"]]
+            }
+          }]
+        }
+      }
+    },
+
+    "CloudFrontOriginAccessIdentity": {
+      "Type": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+      "Properties": {
+        "CloudFrontOriginAccessIdentityConfig": {
+          "Comment": "Web Application Origin Identity"
+        }
+      }
+    },
+
+    "CloudFrontDistribution": {
+      "Type": "AWS::CloudFront::Distribution",
+      "DependsOn": "CloudFrontOriginAccessIdentity",
+
+      "Properties": {
+        "DistributionConfig": {
+
+          "Origins": [{
+            "DomainName": {
+              "Fn::Sub": "${S3BucketWebApplication}.s3.amazonaws.com"
+            },
+            "Id": {
+              "Fn::Sub": "S3-${S3BucketWebApplication}"
+            },
+            "S3OriginConfig": {
+              "OriginAccessIdentity": {
+                "Fn::Sub": "origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentity}"
+              }
+            }
+          }],
+
+          "Enabled": "true",
+          "DefaultRootObject": "index.html",
+          "DefaultCacheBehavior": {
+
+            "AllowedMethods": ["GET", "HEAD"],
+            "TargetOriginId": {
+              "Fn::Sub": "S3-${S3BucketWebApplication}"
+            },
+            "ForwardedValues": {
+              "QueryString": "false",
+              "Cookies": {
+                "Forward": "none"
+              }
+            },
+            "ViewerProtocolPolicy": "redirect-to-https"
+          },
+          "ViewerCertificate": {
+            "CloudFrontDefaultCertificate": "true"
+          }
+
+        }
+      }
+    },
+    "IAMRoleStepFunctions": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+
+        "RoleName": "role-etl-workflow",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "states.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+          }]
+        },
+        "Policies": [{
+          "PolicyName": "snspublish-stepfunction",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [{
+              "Effect": "Allow",
+              "Action": [
+                "sns:Publish"
+              ],
+              "Resource": [{
+                "Fn::Sub": "arn:aws:sns:us-east-1:${AWS::AccountId}:school-analytics-topic"
+              }]
+            }]
+          }
+        }],
+        "ManagedPolicyArns": [
+          "arn:aws:iam::899684081305:policy/service-role/XRayAccessPolicy-93d184c1-81fe-41fd-87b3-86887d4e8537",
+          "arn:aws:iam::899684081305:policy/service-role/GlueJobRunManagementFullAccessPolicy-85e7ca74-9eba-4ad3-8a8f-714fa0acb07d"
+        ]
+      }
+    },
+    "ETLWorkflowStateMachine": {
+      "DependsOn": ["EmailTopic", "GlueJob", "IAMRoleStepFunctions"],
+      "Type": "AWS::StepFunctions::StateMachine",
+      "Properties": {
+        "Definition": {
+          "Comment": "Step function state machine for ETL workflow",
+          "StartAt": "Start Glue Job",
+          "States": {
+            "Start Glue Job": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "MyETLjob"
+              },
+              "ResultPath": "$.glue_job_status",
+              "Next": "Verify Glue job"
+            },
+            "Verify Glue job": {
+              "Type": "Choice",
+              "Choices": [{
+                "Variable": "$.glue_job_status.JobRunState",
+                "StringEquals": "SUCCEEDED",
+                "Next": "Send success notification"
+              }],
+              "Default": "Send error notification"
+            },
+            "Send error notification": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::sns:publish",
+              "Parameters": {
+                "TopicArn": {
+                  "Ref": "EmailTopic"
+                },
+                "Message": "Data workflow failed. Please check AWS Step Functions!"
+              },
+              "Next": "Stop workflow"
+            },
+            "Stop workflow": {
+              "Type": "Fail",
+              "Error": "ErrorCode",
+              "Cause": "Caused By Message"
+            },
+            "Send success notification": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::sns:publish",
+              "Parameters": {
+                "TopicArn": {
+                  "Ref": "EmailTopic"
+                },
+                "Message": "New data at staging environment!"
+              },
+              "End": true
+            }
+          }
+        },
+        "RoleArn": {
+          "Fn::GetAtt": ["IAMRoleStepFunctions", "Arn"]
+        },
+        "StateMachineName": "ETLWorkflow"
+      }
+    }
+  },
+  "Outputs": {
+    "S3DataBucketPath": {
+      "Description": "Path of the bucket to substitute on the gluejob.py file (YOURBUCKETPATH)",
+      "Value": {
+        "Fn::Sub": "s3://school-analytics-data-${AWS::AccountId}"
+      }
+    },
+    "S3WebDataBucketPath": {
+      "Description": "Path of the web bucket",
+      "Value": {
+        "Fn::Sub": "s3://school-analytics-web-${AWS::AccountId}"
+      }
+    },
+    "CloudFrontDistributiondns": {
+      "Description": "CloudFront Web app access",
+      "Value": {
+        "Fn::GetAtt": ["CloudFrontDistribution", "DomainName"]
+      }
+    }
+  }
+}

@@ -296,12 +296,33 @@
       }
     },
     "DMSReplicationInstance": {
+      "DependsOn": "DMSVPCRole",
       "Type": "AWS::DMS::ReplicationInstance",
       "Properties": {
         "AllocatedStorage": 50,
         "PubliclyAccessible": false,
         "ReplicationInstanceClass": "dms.t3.medium",
         "ReplicationInstanceIdentifier": "school-data-replicationinstance"
+      }
+    },
+    "DMSVPCRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+
+        "RoleName": "dms-vpc-role",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "dms.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+          }]
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/service-role/AmazonDMSVPCManagementRole"
+        ]
       }
     },
     "IAMRoleDMS": {
@@ -683,11 +704,48 @@
               }]
             }]
           }
-        }],
-        "ManagedPolicyArns": [
-          "arn:aws:iam::899684081305:policy/service-role/XRayAccessPolicy-93d184c1-81fe-41fd-87b3-86887d4e8537",
-          "arn:aws:iam::899684081305:policy/service-role/GlueJobRunManagementFullAccessPolicy-85e7ca74-9eba-4ad3-8a8f-714fa0acb07d"
-        ]
+        },
+        {
+          "PolicyName": "GlueJobRunManagementFullAccessPolicy",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Action": [
+                        "glue:StartJobRun",
+                        "glue:GetJobRun",
+                        "glue:GetJobRuns",
+                        "glue:BatchStopJobRun"
+                    ],
+                    "Effect": "Allow",
+                    "Resource": [
+                        "*"
+                    ]
+                }
+            ] 
+        }
+        },
+        {
+          "PolicyName": "XRayAccessPolicy",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "xray:PutTraceSegments",
+                        "xray:PutTelemetryRecords",
+                        "xray:GetSamplingRules",
+                        "xray:GetSamplingTargets"
+                    ],
+                    "Resource": [
+                        "*"
+                    ]
+                }
+            ] 
+          }
+        }
+      ]
       }
     },
     "ETLWorkflowStateMachine": {

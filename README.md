@@ -137,7 +137,7 @@ At the end your tnsnames.ora files should look like this:
 save it and close it.
 
 ##### Create Tables
-Connect to your database using SYS user (if you´ve logged out run the .oraenv command before):
+Connect to your database using SYS user (if you´ve logged out run the . oraenv command before):
 ``` bash
 sqlplus sys/Analytics123@//localhost:1521/XEPDB1 as sysdba
 ```
@@ -150,7 +150,7 @@ sqlplus PDBADMIN/Analytics123@//localhost:1521/XEPDB1
 Once you´re in run the [CreateTables SQL Script](/sql/create-school-database.sql) and then the [GRANTSDMSUSER SQL Script](/sql/grantsdmsuser.sql). (don´t forget to commit the changes and then exit the sqlplus).
 
 Now we have our schema and our DMS user permissions set.
- To confirm if everything is working run(if you´ve logged out run the .oraenv command before):
+ To confirm if everything is working run(if you´ve logged out run the . oraenv command before):
 ``` bash
 sqlplus DMS_USER/Analytics123@//localhost:1521/XEPDB1
 SELECT * FROM PDBADMIN.ALUNOS;
@@ -169,7 +169,7 @@ exit
 ### Data Ingestion
 We are all set now. Test the endpoint conection running:
 ``` bash
-aws dms test-connection --replication-instance-arn <REPLICATION_TASK_ARN> --endpoint-arn <SOURCE_ENDPOINT_ARN> 
+aws dms test-connection --replication-instance-arn <REPLICATION_INSTANCE_ARN> --endpoint-arn <SOURCE_ENDPOINT_ARN> 
 #wait for the output of the next query to be 'sucessfull'
 aws dms describe-connections --query "Connections[?EndpointIdentifier=='oracle-db-ec2-instance'].Status" --output text
 ```
@@ -202,7 +202,7 @@ aws s3 ls <S3_DATABUCKET_PATH>/DMS_RAW/PDBADMIN/
 
 ### Starting ETL Workflow
 
-Now we are going to start or ETL workflow. ETL workflow is running on [AWS Step Functions](https://aws.amazon.com/step-functions/). With [AWS Step Functions](https://aws.amazon.com/step-functions/) we are starting our job in [AWS Glue](https://aws.amazon.com/glue/), verifying if our job has succeded and sending a notification (to be received by e-mail) to confirm job success.
+Now we are going to start our ETL workflow. ETL workflow is running on [AWS Step Functions](https://aws.amazon.com/step-functions/). With [AWS Step Functions](https://aws.amazon.com/step-functions/) we are starting our job in [AWS Glue](https://aws.amazon.com/glue/), verifying if our job has succeded and sending a notification (to be received by e-mail) to confirm job success.
 
 #### Accept SNS Topic Subscription
 When we created our resources with Cloudformation we have created a SNS topic where we are going to send messages when we have new data under the staging folder on our S3bucket. Go to your e-mail and confirm your subscription:
@@ -215,7 +215,7 @@ When we created our resources with Cloudformation we have created a SNS topic wh
 
 #### Edit job.py file
 Edit the [job.py](etl-job/gluejob.py) file adding your s3 data bucket path where we have **YOURBUCKETPATH** field. You can find this path on the output tab on the cloudformation console.
-after editing it add the file to our data bucket:
+after editing it add the file to our data bucket (remember to go back to the cloned repository location):
 
 ``` bash
 cd etl-job
@@ -253,7 +253,7 @@ aws s3 cp webapp <WEB_BUCKET_PATH> --recursive
 
 #### Access the web app 
 
-Go to the output tab on the cloudformation console and click on the Cloudfront Distribution output. You will be able to see a analytics web application build with chart.js to give insights inside student and teacher data. To access the console put an id from 1 to 20 or p1 to p7 for teachers dashboards. Here are some examples of dashboards:
+Go to the output tab on the cloudformation console and click on the Cloudfront Distribution output. You will be able to see a analytics web application build with chart.js to give insights inside student and teacher data. To access the console put an id from 1 to 20 or p1 to p7 for teachers dashboards. Contents of the dashboards are in portuguese. Here are some examples of dashboards:
 
 <p align="center"> 
 <img src="images/dashboard10.JPG">
@@ -272,10 +272,12 @@ Go to the output tab on the cloudformation console and click on the Cloudfront D
 ``` bash
 aws s3 rm <WEB_DATABUCKET_PATH> --recursive
 ```
-2) Deleting IAM inline policy:
+2) Deleting IAM inline policies:
 
 ``` bash
 aws iam delete-role-policy --role-name role-etl-workflow --policy-name snspublish-stepfunction
+aws iam delete-role-policy --role-name role-etl-workflow --policy-name GlueJobRunManagementFullAccessPolicy
+aws iam delete-role-policy --role-name role-etl-workflow --policy-name XRayAccessPolicy
 ```
 
 3) Deleting [AWS CloudFormation](https://aws.amazon.com/cloudformation/) stack:

@@ -235,7 +235,8 @@
           },
           "Protocol": "email"
         }],
-        "TopicName": "school-analytics-topic"
+        "TopicName": "school-analytics-topic",
+        "KmsMasterKeyId": "alias/aws/sns"
       }
     },
     "EmailTopicPolicy": {

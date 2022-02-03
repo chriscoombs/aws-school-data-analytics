@@ -32,7 +32,7 @@ Pre-requisites:
 In this repository we have one [AWS CloudFormation](https://aws.amazon.com/cloudformation/) Template that we are going to use to provision the stack.
 After you´ve cloned the repository on your machine, run: 
 ``` bash
-aws cloudformation create-stack --stack-name aws-school-analytics-stack --template-body file://cloudformation/School-Analytics-Demo-Resources.json --parameters ParameterKey=UserEmail,ParameterValue=<USER_EMAIL> ParameterKey=KeyPairName,ParameterValue=<KEY_PAIR> --capabilities CAPABILITY_NAMED_IAM
+aws cloudformation create-stack --stack-name aws-school-analytics-stack --template-body file://cloudformation/School-Analytics-Demo-Resources.json --parameters ParameterKey=UserEmail,ParameterValue=<USER_EMAIL> ParameterKey=KeyPairName,ParameterValue=<KEY_PAIR> ParameterKey=DBAdminpassword,ParameterValue=Analytics123 --capabilities CAPABILITY_NAMED_IAM
 ```
 
 **Values to be replaced:**

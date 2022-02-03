@@ -11,6 +11,11 @@
     "KeyPairName": {
       "Description": "The name of the Key Pair you want to use to access your database on EC2 (do not add the extension .pem)",
       "Type": "String"
+    },
+    "DBAdminpassword": {
+      "Description": "The password to connect to the Oracle DB",
+      "Type": "String",
+      "NoEcho": true
     }
   },
 
@@ -27,6 +32,17 @@
           "BlockPublicPolicy": true,
           "IgnorePublicAcls": true,
           "RestrictPublicBuckets": true
+        },
+        "VersioningConfiguration": {
+          "Status": "Enabled"
+        },
+        "BucketEncryption" : {
+          "ServerSideEncryptionConfiguration" : [ 
+            {
+              "ServerSideEncryptionByDefault":{
+                "SSEAlgorithm": "AES256"
+              }
+            } ]
         },
         "NotificationConfiguration": {
           "LambdaConfigurations": [{
@@ -354,7 +370,9 @@
         "EndpointIdentifier": "oracle-db-ec2-instance",
         "EndpointType": "source",
         "EngineName": "oracle",
-        "Password": "Analytics123",
+        "Password": {
+          "Ref": "DBAdminpassword"
+        },
         "Port": 1521,
         "ServerName": {
           "Fn::GetAtt": ["EC2Oracle", "PrivateIp"]
@@ -591,6 +609,17 @@
       "Properties": {
         "BucketName": {
           "Fn::Sub": "school-analytics-web-${AWS::AccountId}"
+        },
+        "VersioningConfiguration": {
+          "Status": "Enabled"
+        },
+        "BucketEncryption" : {
+          "ServerSideEncryptionConfiguration" : [ 
+            {
+              "ServerSideEncryptionByDefault":{
+                "SSEAlgorithm": "AES256"
+              }
+            } ]
         }
       }
     },

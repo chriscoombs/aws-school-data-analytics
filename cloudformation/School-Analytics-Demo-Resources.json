@@ -73,7 +73,7 @@
           "Fn::GetAtt": ["IAMRoleBasicLambda", "Arn"]
         },
         "Timeout": 360,
-        "Runtime": "python3.7",
+        "Runtime": "python3.10",
 
         "Code": {
           "ZipFile": {
@@ -180,7 +180,7 @@
           "Fn::GetAtt": ["IAMRoleBasicLambda", "Arn"]
         },
         "Timeout": 360,
-        "Runtime": "python3.7",
+        "Runtime": "python3.10",
 
         "Code": {
           "ZipFile": {
